@@ -27,7 +27,7 @@ local images = {}
 local snailScale = 1
 
 function love.load()
-    love.window.setTitle("Haxmas Day 10: Runner")
+    love.window.setTitle("Haxmas Day 10: A Snail's Stroll")
 
     images.snail = {}
     images.snail[1] = love.graphics.newImage("assets/snail1.png")
