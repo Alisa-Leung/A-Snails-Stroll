@@ -1,11 +1,11 @@
 local player = {
     x = 80,
     y = 0,
-    -- x and y of player position
     width = 1,
     height = 1,
     velocityY = 0,
-    isJumping = false
+    isJumping = false,
+    snailIndex = 1
 }
 
 local ground = { y = 0, height = 100 }
@@ -18,6 +18,10 @@ local highScore = 0
 local gameOver = false
 local gravity = 1200
 local jumpForce = -500
+local indexTimer = 0
+local indexInterval = 0.1
+local defaultTimer = 0
+local defaultInterval = 0.5
 
 local images = {}
 local snailScale = 1
@@ -25,12 +29,18 @@ local snailScale = 1
 function love.load()
     love.window.setTitle("Haxmas Day 10: Runner")
 
-    images.snail = love.graphics.newImage("assets/snail1.png")
+    images.snail = {}
+    images.snail[1] = love.graphics.newImage("assets/snail1.png")
+    images.snail[2] = love.graphics.newImage("assets/shell1.png")
+    images.snail[3] = love.graphics.newImage("assets/shell2.png")
+    images.snail[4] = love.graphics.newImage("assets/shell3.png")
+    images.snail[5] = love.graphics.newImage("assets/shell4.png")
+    images.snail[6] = love.graphics.newImage("assets/snail2.png")
     images.salt = love.graphics.newImage("assets/salt.png")
 
     local targetHeight = 100
-    snailScale = targetHeight / images.snail:getHeight()
-    player.width = images.snail:getWidth() * snailScale
+    snailScale = targetHeight / images.snail[player.snailIndex]:getHeight()
+    player.width = images.snail[player.snailIndex]:getWidth() * snailScale
     player.height = targetHeight
 
     ground.y = love.graphics.getHeight() - ground.height
@@ -44,6 +54,31 @@ function love.update(dt)
 
     score = score + dt * 10
     gameSpeed = 300 + score * 0.5
+
+    if love.keyboard.isDown("down") then
+        indexTimer = indexTimer + dt
+        if indexTimer >= indexInterval then
+            indexTimer = 0
+            player.snailIndex = player.snailIndex + 1
+            if player.snailIndex > 5 then
+                player.snailIndex = 2
+            end
+        end
+    else
+        indexTimer = 0
+        defaultTimer = defaultTimer + dt
+        if defaultTimer >= defaultInterval then
+            defaultTimer = 0
+            if player.snailIndex == 1 then
+                player.snailIndex = 6
+            elseif player.snailIndex == 6 then
+                player.snailIndex = 1
+            else
+                player.snailIndex = 1
+            end
+        end
+    end
+
     if player.isJumping then
         player.velocityY = player.velocityY + gravity * dt
         player.y = player.y + player.velocityY * dt
@@ -70,7 +105,7 @@ function love.update(dt)
             table.remove (obstacles, i)
         end
 
-        if checkCollision(player, obs) then
+        if checkCollision(player, obs) and (player.snailIndex == 1 or player.snailIndex == 6) then
             gameOver = true
             if score > highScore then
                 highScore = score
@@ -86,13 +121,14 @@ function love.draw()
     love.graphics.line(0, ground.y, love.graphics.getWidth(), ground.y)
 
     love.graphics.setColor(1, 1, 1)
-    love.graphics.draw(images.snail, player. x, player.y, 0, snailScale, snailScale)
 
     for _, obs in ipairs(obstacles) do
         love.graphics.draw(images.salt, obs.x, obs.y, 0,
             obs.width / images.salt:getWidth(),
             obs.height / images.salt:getHeight())
     end
+
+    love.graphics.draw(images.snail[player.snailIndex], player. x, player.y, 0, snailScale, snailScale)
 
     love.graphics.setColor(0, 0, 0)
     love.graphics.print("Score: " .. math.floor(score), 10, 10)
