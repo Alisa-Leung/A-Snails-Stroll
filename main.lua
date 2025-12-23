@@ -48,7 +48,7 @@ function love.update(dt)
         player.velocityY = player.velocityY + gravity * dt
         player.y = player.y + player.velocityY * dt
 
-        if player.y >= ground.y - player.height then
+        if player.y >= ground.y - player.height + 25 then
             player.y = ground.y - player.height + 25
             player.isJumping = false
             player.velocityY = 0
@@ -134,10 +134,11 @@ function spawnObstacle()
 end
 
 function checkCollision(a, b)
-    return a.x < b.x + b.width and
-        a.x + a.width > b.x and
-        a.y < b.y + b.height and
-        a.y + a.height > b.y
+    local hitbox = 20
+    return a.x + hitbox < b.x + b.width - hitbox and
+        a.x + a.width - hitbox > b.x + hitbox and
+        a.y + hitbox < b.y + b.height - hitbox and
+        a.y + a.height - hitbox > b.y + hitbox
 end
 
 function restartGame()
